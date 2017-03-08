@@ -1,0 +1,105 @@
+<html>
+	<head>
+		<title>Solar System</title>
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #ffffff;
+				margin: 0px;
+				overflow: hidden;
+			}
+			canvas { width: 100%; height: 100% }
+		</style>
+
+	</head>
+	<body bgcolor = "white">
+		
+		<script src="threejs/build/three.min.js"></script>
+		<script src="threejs/examples/js/libs/stats.min.js"></script>
+		<script src="threejs/examples/js/controls/OrbitControls.js"></script>
+
+		<script>
+		
+		var scene = new THREE.Scene();
+		var camera = new THREE.PerspectiveCamera( 75,window.innerWidth / window.innerHeight, 0.1, 1000 );
+		var renderer = new THREE.WebGLRenderer();
+		renderer.setClearColor( 0xf0f0f0 );
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		document.body.appendChild( renderer.domElement );
+
+		camera.position.z = 15;
+		camera.lookAt( scene.position );
+
+		controls = new THREE.OrbitControls( camera );
+		controls.addEventListener( 'change', renderer );
+		
+		stats = new Stats();
+		stats.domElement.style.position = 'absolute';
+		stats.domElement.style.top = '0px';
+		document.body.appendChild( stats.domElement );
+
+		var geometryS = new THREE.SphereGeometry( 2, 32, 32);
+		var geometryA = new THREE.CylinderGeometry( 0.5, 0.5, 5);
+		var materialS = new THREE.MeshBasicMaterial( { color: 0xffff00 });
+		var asseS = new THREE.Mesh( geometryA , materialS);
+		var sole = new THREE.Mesh( geometryS , materialS);
+		sole.add(asseS);
+		scene.add(sole);
+
+		var geometryM = new THREE.SphereGeometry( 1, 32, 32);
+		var materialM = new THREE.MeshBasicMaterial( { color: 0xfff0f0 } );
+		var luna = new THREE.Mesh( geometryM, materialM);
+		var asseL = new THREE.Mesh( geometryA, materialM);
+		luna.add(asseL);
+		luna.matrix.makeTranslation ( 4, 0, 0 );
+		luna.matrixAutoUpdate = false;
+
+		var geometryT = new THREE.SphereGeometry( 2, 32, 32);
+		var materialT = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+		var terra = new THREE.Mesh( geometryT, materialT);
+		var asseT = new THREE.Mesh( geometryA, materialT);
+		terra.add(asseT);
+		var m1 = new THREE.Matrix4();
+
+		m1.makeTranslation ( 10, 0, 0 );
+		m1.multiply(new THREE.Matrix4().makeRotationAxis( new THREE.Vector3(1,0,1), 25*Math.PI/180));
+		terra.matrix.copy(m1);
+		terra.matrixAutoUpdate = false;
+
+		
+
+		var mov1 = new THREE.Object3D();
+		sole.add(mov1);
+		mov1.add(terra);
+		terra.add(luna);
+		
+		/*var axis = new THREE.Vector3(0, 1, 0);
+		var theta = 25 * Math.PI / 180.0;
+		terra.matrix.makeRotationAxis( axis, theta );
+		terra.matrixAutoUpdate = false;*/
+
+		var rotationT = new THREE.Vector3( 0, 1, 0 ); 
+
+		function render() {
+			requestAnimationFrame(render);
+			stats.update();
+			//scene.rotation.y += 0.01;
+			
+			var RotationT = new THREE.Matrix4( );
+			RotationT.makeRotationAxis( rotationT, 1.0*Math.PI/180);
+			terra.matrix.multiply(RotationT);
+			terra.matrixAutoUpdate = false;
+
+			var additionalRotation = new THREE.Matrix4( );
+			additionalRotation.makeRotationAxis( rotationT, 1.0*Math.PI/180);
+			mov1.matrix.multiply( additionalRotation);
+			mov1.matrixAutoUpdate = false;
+
+			renderer.render(scene, camera);
+		}
+
+		render();
+		
+		</script>
+	</body>
+</html>

@@ -1,0 +1,109 @@
+<html>
+	<head>
+		<title>Starting Code for 1st Project 2017</title>
+		<style>
+		
+		body {
+			font-family: Monospace;
+			background-color: #f0f0f0;
+			margin: 0px;
+			overflow: hidden;
+		}
+		
+		canvas { 
+			width: 100%; 
+			height: 100%;
+		}
+	
+	</style>
+		<script src="lib/three.min.js"></script>
+		<script src="lib/stats.min.js"></script>
+		<script src="lib/Coordinates.js"></script>
+		<script src="lib/OrbitControls.js"></script>
+	</head>
+	<body>
+		
+		<script>
+		
+		var scene, camera, renderer, controls, stats;
+		
+		function Start() {
+			scene = new THREE.Scene();
+			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			renderer = new THREE.WebGLRenderer( {antialias: true} );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setClearColor( 0xf0f0f0 );
+			document.body.appendChild( renderer.domElement );
+			
+			camera.position.set(0,5,5);
+			camera.lookAt( new THREE.Vector3(0,0,0));
+			
+			
+			var material1 = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/border.jpg') } );
+			var material2 = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/border.jpg') } );
+			var material3 = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/grass.jpg') } );
+			var material4 = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/dirt.jpg') } );
+			var material5 = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/border.jpg') } );
+			var material6 = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/border.jpg') } );
+  
+			var materials = [material1, material2, material3, material4, material5, material6];
+			var meshFaceMaterial = new THREE.MultiMaterial( materials );
+			
+			var geometry = new THREE.CubeGeometry(2,2,2);
+			var cube = new THREE.Mesh(geometry, meshFaceMaterial);
+
+			var c,i=-1,j=-1;
+			//scene.add( c );
+
+			for(i = -10; i <= 10; i+=2 ){
+				for(j = -10; j <= 10; j+=2 ){
+					c = cube.clone();
+					scene.add( c );
+					c.matrix.makeTranslation ( i, 0, j );
+					c.matrixAutoUpdate = false;
+					
+				}
+			}
+			
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			document.body.appendChild( stats.domElement );
+			
+			/*var geo = new THREE.PlaneGeometry( 200, 200);
+			var material = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/grass.jpg') } );
+			var terrain = new THREE.Mesh(geo,material);
+			scene.add(terrain);
+			var m = new THREE.Matrix4().makeTranslation( 0, -1, 0 ).multiply( new THREE.Matrix4().makeRotationX(-Math.PI/2));
+			terrain.matrix.multiply(m);
+			terrain.matrixAutoUpdate = false;
+			terrain.rotateX(-Math.PI/2);*/
+			
+			// uncomment if you need to draw coordinate axes when building the scene
+			Coordinates.drawAllAxes();
+			
+			controls = new THREE.OrbitControls( camera );
+			controls.addEventListener( 'change', Render );
+			
+			
+		}
+		
+		function Update() {
+			requestAnimationFrame( Update );
+			controls.update();  
+			stats.update();
+			Render();
+		}
+		
+		function Render() {
+			
+			renderer.render(scene, camera);
+		}
+		
+		Start();
+		Update();
+			
+		</script>
+	</body>
+</html>

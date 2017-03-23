@@ -15,7 +15,7 @@
 			height: 100%;
 		}
 	
-	</style>
+		</style>
 		<script src="lib/three.min.js"></script>
 		<script src="lib/stats.min.js"></script>
 		<script src="lib/Coordinates.js"></script>
@@ -26,20 +26,8 @@
 		<script>
 		
 		var scene, camera, renderer, controls, stats;
-		
-		function Start() {
-			scene = new THREE.Scene();
-			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
-			renderer = new THREE.WebGLRenderer( {antialias: true} );
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			renderer.setClearColor( 0xf0f0f0 );
-			document.body.appendChild( renderer.domElement );
-			
-			camera.position.set(0,5,5);
-			camera.lookAt( new THREE.Vector3(0,0,0));
-			
-			
+		function CreateTerrain(w, h, data){
 			var material1 = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/border.jpg') } );
 			var material2 = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/border.jpg') } );
 			var material3 = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/grass.jpg') } );
@@ -50,36 +38,54 @@
 			var materials = [material1, material2, material3, material4, material5, material6];
 			var meshFaceMaterial = new THREE.MultiMaterial( materials );
 			
-			var geometry = new THREE.CubeGeometry(2,2,2);
+			var geometry = new THREE.CubeGeometry(1,1,1);
 			var cube = new THREE.Mesh(geometry, meshFaceMaterial);
 
-			var c,i=-1,j=-1;
-			//scene.add( c );
+			for ( var i = 0; i < data.length; i ++ ) {
+		        data[i] = Math.round(data[i]/51);
+		    }
 
-			for(i = -10; i <= 10; i+=2 ){
-				for(j = -10; j <= 10; j+=2 ){
-					c = cube.clone();
-					scene.add( c );
-					c.matrix.makeTranslation ( i, 0, j );
-					c.matrixAutoUpdate = false;
-					
+			var k=0,cubes = new Array(data.length);
+			for(var i = 0; i < h; i++ ){
+				for(var j = 0; j < w; j++ ){
+					cubes[k] = cube.clone();
+					scene.add( cubes[k] );
+					cubes[k].matrix.makeTranslation ( i, data[k], j );
+					cubes[k].matrixAutoUpdate = false;
+					k++;
 				}
 			}
+		}
+		
+		function Start() {
+			scene = new THREE.Scene();
+			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+			renderer = new THREE.WebGLRenderer( {antialias: true} );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setClearColor( 0xf0f0f0 );
+			document.body.appendChild( renderer.domElement );
+			
+			camera.position.set(0,25,25);
+			camera.lookAt( new THREE.Vector3(0,0,0));			
+
+			// terrain
+			var img = new Image();
+			img.onload = function () {
+				var data = getHeightData(img);
+				alert("Num of elements "+data.length);
+				CreateTerrain(img.width, img.height, data);
+
+			}
+			// load img source
+			img.src = "textures/heightmap.png";
+			
+
 			
 			stats = new Stats();
 			stats.domElement.style.position = 'absolute';
 			stats.domElement.style.top = '0px';
 			document.body.appendChild( stats.domElement );
-			
-			/*var geo = new THREE.PlaneGeometry( 200, 200);
-			var material = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('textures/grass.jpg') } );
-			var terrain = new THREE.Mesh(geo,material);
-			scene.add(terrain);
-			var m = new THREE.Matrix4().makeTranslation( 0, -1, 0 ).multiply( new THREE.Matrix4().makeRotationX(-Math.PI/2));
-			terrain.matrix.multiply(m);
-			terrain.matrixAutoUpdate = false;
-			terrain.rotateX(-Math.PI/2);*/
-			
+
 			// uncomment if you need to draw coordinate axes when building the scene
 			Coordinates.drawAllAxes();
 			
@@ -88,6 +94,41 @@
 			
 			
 		}
+
+		function getHeightData(img,scale) {
+  
+			if (scale == undefined) scale=1;
+  
+		    var canvas = document.createElement( 'canvas' );
+		    canvas.width = img.width;
+		    canvas.height = img.height;
+		    var context = canvas.getContext( '2d' );
+ 
+		    var size = img.width * img.height;
+			console.log(size);
+		    var data = new Float32Array( size );
+ 
+		    context.drawImage(img,0,0);
+ 
+		    for ( var i = 0; i < size; i ++ ) {
+		        data[i] = 0;
+		    }
+ 
+		    var imgd = context.getImageData(0, 0, img.width, img.height);
+		    var pix = imgd.data;
+ 
+		    var j=0;
+		    for (var i = 0; i < size*4; i += 4) {
+		        var all = pix[i] + pix[i+1] + pix[i+2];  // all is in range 0 - 255*3
+		        data[j] = scale*all/3;
+		        j++;
+		    }
+     
+		    return data;
+		}
+
+
+
 		
 		function Update() {
 			requestAnimationFrame( Update );

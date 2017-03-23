@@ -72,7 +72,8 @@
 			var img = new Image();
 			img.onload = function () {
 				var data = getHeightData(img);
-				alert("Num of elements "+data.length);
+				//If you want to know the number of the cubes
+				//alert("Num of elements "+data.length);
 				CreateTerrain(img.width, img.height, data);
 
 			}
